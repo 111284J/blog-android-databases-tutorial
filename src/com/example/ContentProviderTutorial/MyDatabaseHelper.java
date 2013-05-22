@@ -22,10 +22,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
   @Override
   public void onCreate(SQLiteDatabase db) {
     db.execSQL("CREATE TABLE " + TABLE_USERS + " ("
-        + COL_ID + " PRIMARY KEY AUTOINCREMENT,"
+        + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
         + COL_NAME + " TEXT NOT NULL,"
-        + COL_EMAIL + " TEXT NOT NULL,"
-        + COL_DOB + " INTEGER NOT NULL"
+        + COL_EMAIL + " TEXT,"
+        + COL_DOB + " INTEGER"
         + ");");
   }
 
@@ -35,11 +35,15 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     onCreate(db);
   }
 
-  public long insert(String tableName, ContentValues values) {
+  public long insert(String tableName, ContentValues values) throws NotValidException {
+    validate(values);
+
     return getWritableDatabase().insert(tableName, null, values);
   }
 
-  public int update(String tableName, long id, ContentValues values) {
+  public int update(String tableName, long id, ContentValues values) throws NotValidException {
+    validate(values);
+
     String selection = COL_ID + " = ?";
     String[] selectionArgs = {String.valueOf(id)};
 
@@ -51,5 +55,17 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     String[] selectionArgs = {String.valueOf(id)};
 
     return getWritableDatabase().delete(tableName, selection, selectionArgs);
+  }
+
+  protected void validate(ContentValues values) throws NotValidException {
+    if (values.containsKey(COL_NAME) || values.getAsString(COL_NAME).isEmpty()) {
+      throw new NotValidException("User name must be set");
+    }
+  }
+
+  public static class NotValidException extends Throwable {
+    public NotValidException(String msg) {
+      super(msg);
+    }
   }
 }
