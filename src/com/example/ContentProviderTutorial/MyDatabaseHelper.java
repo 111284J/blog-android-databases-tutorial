@@ -2,6 +2,7 @@ package com.example.ContentProviderTutorial;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -58,9 +59,14 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
   }
 
   protected void validate(ContentValues values) throws NotValidException {
-    if (values.containsKey(COL_NAME) || values.getAsString(COL_NAME).isEmpty()) {
+    if (!values.containsKey(COL_NAME) || values.getAsString(COL_NAME) == null || values.getAsString(COL_NAME).isEmpty()) {
       throw new NotValidException("User name must be set");
     }
+  }
+
+  public Cursor query(String tableName, String orderedBy) {
+    String[] projection = {COL_ID, COL_NAME, COL_EMAIL, COL_DOB};
+    return getReadableDatabase().query(tableName, projection, null, null, null, null, orderedBy);
   }
 
   public static class NotValidException extends Throwable {
